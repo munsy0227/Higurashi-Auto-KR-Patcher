@@ -43,6 +43,6 @@ jobs:
       - name: Create Release and Upload Asset
         uses: softprops/action-gh-release@v1
         with:
-          files: ./dist/main.exe
+          files: ./dist/쓰르라미_자동_한글패치.exe
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
