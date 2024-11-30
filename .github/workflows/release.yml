@@ -33,7 +33,7 @@ jobs:
       # PyInstaller를 사용하여 실행 파일 생성
       - name: Build with PyInstaller
         run: |
-          pyinstaller --onefile --name "쓰르라미_자동_한글패치" --add-data "IMG.png;." --add-data "Steamgrid;Steamgrid" main.py
+          pyinstaller --onefile --name "Higurashi_Auto_Kor_Patch" --add-data "IMG.png;." --add-data "Steamgrid;Steamgrid" main.py
 
       # 생성된 실행 파일 확인
       - name: List generated files
@@ -43,6 +43,6 @@ jobs:
       - name: Create Release and Upload Asset
         uses: softprops/action-gh-release@v1
         with:
-          files: ./dist/쓰르라미_자동_한글패치.exe
+          files: ./dist/Higurashi_Auto_Kor_Patch.exe
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
