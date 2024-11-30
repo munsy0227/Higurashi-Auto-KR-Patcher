@@ -11,6 +11,7 @@ from tkinter import ttk, messagebox
 import vdf
 import threading
 from PIL import Image, ImageTk
+import sys
 
 
 # Steam 설치 경로 가져오기
@@ -81,6 +82,17 @@ def extract_zip(zip_path, extract_to, progress_callback=None):
         if progress_callback:
             progress_callback(f"압축을 푸는 중에 문제가 생겼어요: {e} 도와주세요~")
         raise
+
+
+# 리소스 파일 접근을 위한 경로 설정 함수
+def resource_path(relative_path):
+    """ PyInstaller로 패키징된 파일 내부의 리소스 경로를 얻습니다. """
+    if hasattr(sys, '_MEIPASS'):
+        # PyInstaller로 패키징된 경우 임시 디렉터리 경로 반환
+        return Path(sys._MEIPASS) / relative_path
+    else:
+        # 일반 Python 스크립트 실행 시
+        return Path(relative_path)
 
 
 # ZIP 파일을 다운로드하고 압축 해제 및 복사
@@ -182,7 +194,7 @@ class PatchInstallerUI:
 
         # 이미지 추가 (이미지 크기 조정 포함)
         try:
-            image_path = r"IMG.png"
+            image_path = resource_path('IMG.png')
             self.header_image = Image.open(image_path)
             # 이미지 크기 조정 (너무 크다면 줄여줌)
             self.header_image = self.header_image.resize((300, 400), Image.LANCZOS)

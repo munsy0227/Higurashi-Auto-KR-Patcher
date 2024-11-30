@@ -2,3 +2,4 @@ gdown
 tqdm
 Pillow
 pyvdf
+vdf
