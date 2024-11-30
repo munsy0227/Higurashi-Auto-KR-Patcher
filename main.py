@@ -86,8 +86,8 @@ def extract_zip(zip_path, extract_to, progress_callback=None):
 
 # 리소스 파일 접근을 위한 경로 설정 함수
 def resource_path(relative_path):
-    """ PyInstaller로 패키징된 파일 내부의 리소스 경로를 얻습니다. """
-    if hasattr(sys, '_MEIPASS'):
+    """PyInstaller로 패키징된 파일 내부의 리소스 경로를 얻습니다."""
+    if hasattr(sys, "_MEIPASS"):
         # PyInstaller로 패키징된 경우 임시 디렉터리 경로 반환
         return Path(sys._MEIPASS) / relative_path
     else:
@@ -178,6 +178,36 @@ def apply_patch_from_zip(
         return True  # 패치 성공
 
 
+# Steamgrid 이미지 적용
+def apply_steamgrid_images(steam_path):
+    # 사용자 데이터 경로
+    user_data_dir = Path(steam_path) / "userdata"
+    steamgrid_source = resource_path("Steamgrid")
+
+    if not steamgrid_source.exists():
+        print(f"Error: Steamgrid 이미지를 찾을 수 없습니다. 경로: {steamgrid_source}")
+        return
+
+    # 각 사용자의 Steamgrid 이미지 경로에 이미지 복사
+    for user_dir in user_data_dir.iterdir():
+        if user_dir.is_dir():
+            grid_destination = user_dir / "config" / "grid"
+            grid_destination.mkdir(parents=True, exist_ok=True)
+
+            for image_file in steamgrid_source.glob("*.*"):
+                target_image_path = grid_destination / image_file.name
+                try:
+                    shutil.copy2(image_file, target_image_path)
+                except Exception as e:
+                    print(
+                        f"이미지 복사 중 오류 발생: {image_file} -> {target_image_path}, 오류 메시지: {e}"
+                    )
+
+    print(
+        f"모든 Steamgrid 이미지가 해당 경로에 복사되었습니다: {user_data_dir}/config/grid"
+    )
+
+
 # GUI 설정
 class PatchInstallerUI:
     def __init__(self, root, chapters, library_paths):
@@ -194,7 +224,7 @@ class PatchInstallerUI:
 
         # 이미지 추가 (이미지 크기 조정 포함)
         try:
-            image_path = resource_path('IMG.png')
+            image_path = resource_path("IMG.png")
             self.header_image = Image.open(image_path)
             # 이미지 크기 조정 (너무 크다면 줄여줌)
             self.header_image = self.header_image.resize((300, 400), Image.LANCZOS)
@@ -421,3 +451,6 @@ if __name__ == "__main__":
     root = tk.Tk()
     app = PatchInstallerUI(root, chapters, library_paths)
     root.mainloop()
+
+    # 패치 설치 후 Steamgrid 이미지 적용
+    apply_steamgrid_images(steam_path)
