@@ -1,5 +1,5 @@
 gdown
 tqdm
 Pillow
-pyvdf
 vdf
+sv-ttk

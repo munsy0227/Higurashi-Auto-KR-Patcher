@@ -12,6 +12,23 @@ import vdf
 import threading
 from PIL import Image, ImageTk
 import sys
+import sv_ttk
+import winreg
+
+
+# Windows 다크 모드 감지 함수
+def is_windows_dark_mode():
+    try:
+        registry = winreg.ConnectRegistry(None, winreg.HKEY_CURRENT_USER)
+        key_path = r"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize"
+        key = winreg.OpenKey(registry, key_path)
+        # 'AppsUseLightTheme' 값이 0이면 다크 모드, 1이면 라이트 모드
+        use_light_theme = winreg.QueryValueEx(key, "AppsUseLightTheme")[0]
+        winreg.CloseKey(key)
+        return use_light_theme == 0
+    except Exception as e:
+        print(f"다크 모드 감지 중 오류 발생: {e}")
+        return False  # 오류 발생 시 기본적으로 라이트 모드로 간주
 
 
 # Steam 설치 경로 가져오기
@@ -217,14 +234,27 @@ class PatchInstallerUI:
     def __init__(self, root, chapters, library_paths):
         self.root = root
         self.root.title("쓰르라미 울 적에 한글 패치 마법사")
-        self.root.geometry("700x480")  # 창 크기 조정
+        self.root.geometry("750x500")  # 창 크기 조정
         self.library_paths = library_paths
 
-        self.selected_chapters = []
-        self.chapters = chapters
+        # 다크 모드 여부 감지
+        self.is_dark_mode = is_windows_dark_mode()
+
+        # Sun Valley 테마 적용
+        sv_ttk.set_theme("dark" if self.is_dark_mode else "light")
 
         # 기본 폰트 설정 (맑은 고딕 사용)
         self.custom_font = ("맑은 고딕", 12)
+
+        # ttk 스타일에 기본 폰트 적용
+        style = ttk.Style()
+        style.configure(".", font=self.custom_font)
+        style.configure("TLabel", font=self.custom_font)
+        style.configure("TButton", font=self.custom_font)
+        style.configure("TCheckbutton", font=self.custom_font)
+
+        self.selected_chapters = []
+        self.chapters = chapters
 
         # 이미지 추가 (이미지 크기 조정 포함)
         try:
@@ -248,7 +278,6 @@ class PatchInstallerUI:
             self.root,
             text="어떤 챕터에 패치를 적용할지 선택해 주십시오.",
             justify="center",
-            font=self.custom_font,
         )
         title_label.pack(pady=10)
 
@@ -302,7 +331,7 @@ class PatchInstallerUI:
             chk.pack(anchor="w")
 
         # 진행 상태 표시 레이블
-        self.status_label = ttk.Label(self.root, text="", font=self.custom_font)
+        self.status_label = ttk.Label(self.root, text="")
         self.status_label.pack(pady=20)
 
         # 설치 버튼
