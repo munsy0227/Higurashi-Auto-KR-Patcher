@@ -65,7 +65,7 @@ def download_from_google_drive(file_id, destination, progress_callback=None):
         gdown.download(url, str(destination), quiet=False)
     except Exception as e:
         if progress_callback:
-            progress_callback(f"다운로드 중에 문제가 생겼어요: {e} 미이~")
+            progress_callback(f"다운로드 중 문제가 발생하였습니다: {e}")
         raise e
 
 
@@ -76,11 +76,11 @@ def extract_zip(zip_path, extract_to, progress_callback=None):
             zip_ref.extractall(extract_to)
     except zipfile.BadZipFile:
         if progress_callback:
-            progress_callback("압축 파일이 망가진 것 같아요. 슬퍼요~")
+            progress_callback("압축 파일이 손상된 것 같습니다.")
         raise
     except Exception as e:
         if progress_callback:
-            progress_callback(f"압축을 푸는 중에 문제가 생겼어요: {e} 도와주세요~")
+            progress_callback(f"압축 해제 중 문제가 발생하였습니다: {e}")
         raise
 
 
@@ -106,18 +106,22 @@ def apply_patch_from_zip(
         # 1. ZIP 파일 다운로드
         if progress_callback:
             progress_callback(
-                "구글 드라이브에서 패치 파일을 가져오는 중이에요. 조금만 기다려 주세요~"
+                "구글 드라이브에서 패치 파일을 가져오는 중입니다. 잠시만 기다려 주시기 바랍니다."
             )
         download_from_google_drive(file_id, zip_path, progress_callback)
         if progress_callback:
-            progress_callback(f"다운로드가 끝났어요! 저장된 곳은 여기에요: {zip_path}")
+            progress_callback(
+                f"다운로드가 완료되었습니다. 저장된 위치는 다음과 같습니다: {zip_path}"
+            )
 
         # 2. ZIP 파일 압축 해제
         if progress_callback:
-            progress_callback("패치 파일을 풀고 있어요. 미이~")
+            progress_callback("패치 파일을 해제하는 중입니다.")
         extract_zip(zip_path, temp_dir, progress_callback)
         if progress_callback:
-            progress_callback(f"압축을 다 풀었어요! 여기로 풀렸어요: {temp_dir}")
+            progress_callback(
+                f"압축이 모두 해제되었습니다. 해제된 위치는 다음과 같습니다: {temp_dir}"
+            )
 
         if special_handling:
             # 동적으로 'Data' 폴더 찾기
@@ -131,7 +135,7 @@ def apply_patch_from_zip(
             )
             if not data_folder:
                 progress_callback(
-                    "문제가 생겼어요! 패치 파일 안에서 'Data' 폴더를 못 찾았어요. 패치를 적용할 수 없어요. 미이~"
+                    "패치 파일 내에서 'Data' 폴더를 찾을 수 없어 적용이 불가능합니다."
                 )
                 return False
             # 모든 파일 복사
@@ -148,14 +152,14 @@ def apply_patch_from_zip(
             )
             if korean_patch_folder is None:
                 progress_callback(
-                    "어라? '한국어 패치' 폴더가 안 보여요. 그래서 패치를 적용할 수 없어요. 미안해요~"
+                    "'한국어 패치' 폴더를 확인할 수 없어 패치를 적용할 수 없습니다."
                 )
                 return False
             # 모든 파일 복사
             all_items = [p for p in korean_patch_folder.rglob("*") if p.is_file()]
 
         # 5. 총 파일 수를 기반으로 진행률 표시하며 복사
-        progress_callback("패치 파일을 적용하는 중이에요. 조금만 기다려 주세요~")
+        progress_callback("패치 파일을 적용하고 있습니다. 잠시만 기다려 주십시오.")
         for file_path in tqdm(all_items, desc="패치 적용", unit="file"):
             relative_path = file_path.relative_to(
                 data_folder if special_handling else korean_patch_folder
@@ -170,10 +174,10 @@ def apply_patch_from_zip(
                 shutil.copy2(file_path, target_path)
             except Exception as e:
                 progress_callback(
-                    f"파일을 복사하는 중 문제가 생겼어요: {file_path} -> {target_path}\n오류 메시지: {e} 도와주세요~"
+                    f"파일 복사 중 문제가 발생하였습니다: {file_path} -> {target_path}\n오류: {e}"
                 )
         progress_callback(
-            f"패치를 다 적용했어요! 대상 경로는 이거예요: {destination} 니파~☆"
+            f"패치가 완료되었습니다. 적용된 경로는 다음과 같습니다: {destination}"
         )
         return True  # 패치 성공
 
@@ -213,7 +217,7 @@ class PatchInstallerUI:
     def __init__(self, root, chapters, library_paths):
         self.root = root
         self.root.title("쓰르라미 울 적에 한글 패치 마법사")
-        self.root.geometry("700x750")  # 창 크기 조정
+        self.root.geometry("700x480")  # 창 크기 조정
         self.library_paths = library_paths
 
         self.selected_chapters = []
@@ -227,7 +231,7 @@ class PatchInstallerUI:
             image_path = resource_path("IMG.png")
             self.header_image = Image.open(image_path)
             # 이미지 크기 조정 (너무 크다면 줄여줌)
-            self.header_image = self.header_image.resize((300, 400), Image.LANCZOS)
+            self.header_image = self.header_image.resize((500, 163), Image.LANCZOS)
             self.header_image_tk = ImageTk.PhotoImage(self.header_image)
 
             # 이미지 레이블 생성
@@ -242,7 +246,7 @@ class PatchInstallerUI:
         # 제목 레이블
         title_label = ttk.Label(
             self.root,
-            text="어떤 챕터에 패치를 적용할지 골라주세요~",
+            text="어떤 챕터에 패치를 적용할지 선택해 주십시오.",
             justify="center",
             font=self.custom_font,
         )
@@ -324,7 +328,8 @@ class PatchInstallerUI:
 
         if not self.selected_chapters:
             messagebox.showwarning(
-                "경고", "에? 설치할 챕터를 하나도 안 골랐어요! 골라 주세요~"
+                "경고",
+                "설치할 챕터를 선택하지 않으셨습니다. 챕터를 선택해 주시기 바랍니다.",
             )
             return
 
@@ -337,12 +342,12 @@ class PatchInstallerUI:
             game_path = find_game_install_path_by_name(self.library_paths, folder_name)
             if not game_path:
                 self.update_status(
-                    f"{display_name} 폴더를 찾을 수가 없네요. 이건 건너뛰어야 할 것 같아요. 미이~"
+                    f"{display_name} 폴더를 찾을 수 없어 건너뛰었습니다."
                 )
                 continue
 
             self.update_status(
-                f"{display_name}의 설치 경로를 찾았어요! 여기예요: {game_path}"
+                f"{display_name}의 설치 경로를 확인하였습니다. 경로: {game_path}"
             )
 
             try:
@@ -357,19 +362,18 @@ class PatchInstallerUI:
                     patched_chapters.append(display_name)
             except Exception as e:
                 self.update_status(
-                    f"{display_name}에 패치를 적용하는 중 문제가 생겼어요: {e} 도와주세요~"
+                    f"{display_name}에 패치 적용 중 문제가 발생하였습니다: {e}"
                 )
 
         # 결과 표시
         if patched_chapters:
             messagebox.showinfo(
                 "완료",
-                "다음 챕터에 한글 패치가 잘 적용되었어요!\n"
-                + "\n".join(patched_chapters)
-                + "\n니파~☆",
+                "다음 챕터에 한글 패치가 성공적으로 적용되었습니다.\n"
+                + "\n".join(patched_chapters),
             )
         else:
-            messagebox.showinfo("완료", "패치가 적용된 챕터가 하나도 없네요... 슬퍼요~")
+            messagebox.showinfo("완료", "패치가 적용된 챕터가 없습니다.")
 
 
 # 메인 실행
@@ -432,13 +436,13 @@ if __name__ == "__main__":
     # Steam 설치 경로 찾기
     steam_path = get_steam_install_path()
     if not steam_path:
-        messagebox.showerror("오류", "Steam 설치 경로를 찾지 못했어요. 미이~")
+        messagebox.showerror("오류", "Steam 설치 경로를 확인할 수 없습니다.")
         exit()
 
     # Steam 라이브러리 폴더 찾기
     library_paths = get_steam_library_folders(steam_path)
     if not library_paths:
-        messagebox.showerror("오류", "Steam 라이브러리 폴더가 보이지 않아요.")
+        messagebox.showerror("오류", "Steam 라이브러리 폴더를 찾을 수 없습니다.")
         exit()
 
     # 설치된 챕터 자동 감지
