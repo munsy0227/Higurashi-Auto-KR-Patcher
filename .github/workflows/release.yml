@@ -33,7 +33,11 @@ jobs:
       # PyInstaller를 사용하여 실행 파일 생성
       - name: Build with PyInstaller
         run: |
-          pyinstaller --onefile --name "Higurashi_Auto_Kor_Patch" --add-data "IMG.png;." --add-data "Steamgrid;Steamgrid" main.py
+          pyinstaller --onefile --name "Higurashi_Auto_Kor_Patch" ^
+          --add-data "IMG.png;." ^
+          --add-data "ICO.ico;." ^
+          --add-data "Steamgrid;Steamgrid" ^
+          main.py
 
       # 생성된 실행 파일 확인
       - name: List generated files
