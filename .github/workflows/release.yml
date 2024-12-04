@@ -36,6 +36,7 @@ jobs:
         run: |
           pyinstaller --onefile --name "Higurashi_Auto_Kor_Patch" ^
           --icon "ICO.ico" ^
+          --add-data "ICO.ico" ^
           --add-data "IMG.png;." ^
           --add-data "Steamgrid;Steamgrid" ^
           main.py
