@@ -14,6 +14,7 @@ from PIL import Image, ImageTk
 import sys
 import sv_ttk
 import winreg
+import ctypes
 
 
 # Windows 다크 모드 감지 함수
@@ -31,10 +32,14 @@ def is_windows_dark_mode():
         return False  # 오류 발생 시 기본적으로 라이트 모드로 간주
 
 
+# 작업표시줄 아이콘 설정 함수
+def set_app_user_model_id():
+    app_id = "쓰르라미_울_적에_한글_패치_마법사"  # 원하는 AppUserModelID로 설정
+    ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(app_id)
+
+
 # Steam 설치 경로 가져오기
 def get_steam_install_path():
-    import winreg
-
     try:
         key = winreg.OpenKey(winreg.HKEY_CURRENT_USER, r"Software\Valve\Steam")
         steam_path, _ = winreg.QueryValueEx(key, "SteamPath")
@@ -243,6 +248,15 @@ class PatchInstallerUI:
         # Sun Valley 테마 적용
         sv_ttk.set_theme("dark" if self.is_dark_mode else "light")
 
+        # 아이콘 설정
+        icon_path = resource_path("ICO.ico")
+        try:
+            # 작업표시줄 아이콘 적용을 위해 PhotoImage 사용
+            icon_img = ImageTk.PhotoImage(file=icon_path)
+            self.root.iconphoto(False, icon_img)
+        except Exception as e:
+            print(f"아이콘 설정 중 오류 발생: {e}")
+
         # 기본 폰트 설정 (맑은 고딕 사용)
         self.custom_font = ("맑은 고딕", 12)
 
@@ -407,6 +421,9 @@ class PatchInstallerUI:
 
 # 메인 실행
 if __name__ == "__main__":
+    # 작업표시줄 아이콘 설정
+    set_app_user_model_id()
+
     # 챕터 정보
     chapters = [
         {
