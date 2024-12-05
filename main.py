@@ -15,6 +15,33 @@ import sys
 import sv_ttk
 import winreg
 import ctypes
+import requests
+import webbrowser
+from packaging import version
+
+__version__ = "1.0.3"
+
+
+# 업데이트 확인 함수
+def check_for_updates(current_version):
+    url = "https://api.github.com/repos/munsy0227/Higurashi-Auto-KR-Patcher/releases/latest"
+    try:
+        response = requests.get(url)
+        data = response.json()
+        latest_version = data.get("tag_name")
+        if latest_version is None:
+            return False
+        # 'v' 접두사가 있으면 제거
+        latest_version = latest_version.lstrip("v")
+        # 버전 비교
+        if version.parse(latest_version) > version.parse(current_version):
+            # 최신 버전이 있음
+            return True
+        else:
+            return False
+    except Exception as e:
+        print(f"업데이트 확인 중 오류 발생: {e}")
+        return False
 
 
 # Windows 다크 모드 감지 함수
@@ -423,6 +450,16 @@ class PatchInstallerUI:
 if __name__ == "__main__":
     # 작업표시줄 아이콘 설정
     set_app_user_model_id()
+
+    # 업데이트 확인 추가된 부분
+    if check_for_updates(__version__):
+        # 업데이트가 있으면 웹사이트를 엽니다.
+        messagebox.showinfo(
+            "업데이트 알림", "새로운 버전이 있습니다. 다운로드 페이지를 엽니다."
+        )
+        webbrowser.open(
+            "https://github.com/munsy0227/Higurashi-Auto-KR-Patcher/releases/latest"
+        )
 
     # 챕터 정보
     chapters = [
